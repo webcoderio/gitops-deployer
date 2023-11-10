@@ -1,0 +1,28 @@
+version: '3.7'
+
+networks:
+    webcoderio-network:
+        driver: bridge
+
+services:
+    app-app:
+        container_name: app-app
+        hostname: app-app
+        networks:
+            webcoderio-network:
+                aliases:
+                    - app-app
+        build:
+            context: .
+            dockerfile: dockerfile
+        tty: true
+        restart: unless-stopped
+        working_dir: /var/www/html/
+        volumes:
+            - ./:/var/www
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        expose:
+            - 80
+        ports:
+            - "8080:8080"

@@ -1,0 +1,12 @@
+# pls sort alphanumerically
+*Zone.Identifier
+.idea/
+/composer.json
+/composer.lock
+/node_moudles/
+/package.json
+/vendor
+/yarn.lock
+docker/logs/*.log
+html/deployer/gitops-deployer
+tmp
