@@ -8,5 +8,5 @@
 /vendor
 /yarn.lock
 docker/logs/*.log
-html/deployer/gitops-deployer
+/html/gitops-deployer/gitops-deployer
 tmp

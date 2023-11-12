@@ -59,18 +59,16 @@ func runDeployScript(repoName string) error {
 	domainKey := fmt.Sprintf("%s_DOMAIN", repoId)
 	deployPathKey := fmt.Sprintf("%s_DEPLOY_PATH", repoId)
 	deployPathIgnoreKey := fmt.Sprintf("%s_DEPLOY_PATH_IGNORE", repoId)
-	sshKeyPathKey := fmt.Sprintf("%s_SSH_KEY_PATH", repoId)
 
-    // variables
+    # variables
 	scriptName = os.Getenv(scriptName)
 	repoURL := os.Getenv(repoURLKey)
 	repoBranch := os.Getenv(repoBranchKey)
 	domain := os.Getenv(domainKey)
 	deployPath := os.Getenv(deployPathKey)
 	deployPathIgnore := os.Getenv(deployPathIgnoreKey)
-	sshKeyPath := os.Getenv(sshKeyPathKey)
 
-	cmd := exec.Command("bash", scriptName, repoURL, repoBranch, domain, deployPath, deployPathIgnore, sshKeyPath)
+	cmd := exec.Command("bash", scriptName, repoURL, repoBranch, domain, deployPath, deployPathIgnore)
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {

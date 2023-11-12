@@ -2,37 +2,59 @@
 
 source .env
 
+getConfig() {
+    repo_prefix=$1
+
+    repo_name="${repo_prefix}_REPO_NAME"
+    repo_branch="${repo_prefix}_REPO_BRANCH"
+    domain="${repo_prefix}_DOMAIN"
+    deploy_path="${repo_prefix}_DEPLOY_PATH"
+}
+
 pullBuild() {
-    repo_suffix=$1
-    source "repo-name${repo_suffix}.env"
+    repo_prefix=$1
+    getConfig $repo_prefix
 
-    echo "Pulling repository ${REPO_NAME_${repo_suffix}}..."
+    echo "Downloading GitHub release build for ${!repo_name}..."
 
-    # ssh key validation
-    if [ ! -d "${DEPLOY_PATH_${repo_suffix}}/.git" ]; then
-        GIT_SSH_COMMAND="ssh -i ${SSH_KEY_PATH_${repo_suffix}}" git clone -b "${REPO_BRANCH_${repo_suffix}}" "${REPO_URL_${repo_suffix}}" "${DEPLOY_PATH_${repo_suffix}}"
-    else
-        cd "${DEPLOY_PATH_${repo_suffix}}" || exit 1
-        GIT_SSH_COMMAND="ssh -i ${SSH_KEY_PATH_${repo_suffix}}" git fetch origin "${REPO_BRANCH_${repo_suffix}}"
-        GIT_SSH_COMMAND="ssh -i ${SSH_KEY_PATH_${repo_suffix}}" git reset --hard "origin/${REPO_BRANCH_${repo_suffix}}"
-    fi
-
-    echo "Pulling repository ${REPO_NAME_${repo_suffix}} successful!"
+    # todo: downloadGitHubRelease()
 }
 
 pushBuild() {
-    repo_suffix=$1
-    source "repo-name${repo_suffix}.env"
+    repo_prefix=$1
+    getConfig $repo_prefix
 
-    echo "Deploying repository ${REPO_NAME_${repo_suffix}}..."
-
-    pullRepository ${repo_suffix}
+    echo "Pushing repository ${!repo_name} to local server..."
 
     # ignore list
-    IFS=',' read -ra ignore_list <<< "${DEPLOY_PATH_IGNORE_${repo_suffix}}"
+    IFS=',' read -ra ignore_list <<< "${!deploy_path_ignore}"
     for ignore_item in "${ignore_list[@]}"; do
-        rm -rf "/var/www/html/${DOMAIN_${repo_suffix}}/${ignore_item}"
+        rm -rf "/var/www/html/${!domain}/${ignore_item}"
+        cp -r "${!deploy_path}/${ignore_item}" "/var/www/html/${!domain}/"
     done
 
-    echo "Deployment for ${REPO_NAME_${repo_suffix}} successful!"
+    echo "Pushing for ${!repo_name} to local server successful!"
+}
+
+func downloadGitHubRelease(repoURL, repoBranch, repoName string) error {
+	// store
+	tempDir, err := ioutil.TempDir("", "release-temp-dir")
+	if err != nil {
+		return fmt.Errorf("Error creating temporary directory: %s", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+  // curl
+	releaseURL := fmt.Sprintf("%s/releases/download/%s/RELEASE_FILE_NAME", repoURL, repoBranch)
+	downloadCmd := exec.Command("curl", "-LJO", releaseURL)
+	downloadCmd.Dir = tempDir
+	downloadOutput, downloadErr := downloadCmd.CombinedOutput()
+
+	if downloadErr != nil {
+		return fmt.Errorf("Error downloading release file: %s", downloadErr)
+	}
+
+	fmt.Printf("Downloaded release file for %s to %s\n", repoName, tempDir)
+
+	return nil
 }
