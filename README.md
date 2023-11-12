@@ -1,4 +1,5 @@
 # GitOps Deployer
 ## Credit to: Andy Ng www.webcoder.io
-Golang-powered Gin API transforming Git-to-server deployment for DevOps excellence. It excels where Rsync/SCP struggle, ideal for scenarios with IP blocks limiting SSH. This Docker microservices solution seamlessly integrates with GitHub Action pipelines, offering the fastest, Jenkins-killer bash-driven approach for CI/CD in restricted environments. Master deployment with speed, security, and microservices finesse.
+
+Golang-powered Gin API, a DevOps powerhouse, excels in Git-to-server deployment, overcoming Rsync/SCP limitations and tailored for scenarios restricting SSH access, making it ideal for Docker microservices. Seamlessly integrate with GitHub Action pipelines for the fastest, Jenkins-killer bash-driven CI/CD in restricted environments, enhancing security constraints by pulling from GitHub releases. Master deployment with speed, security, and microservices finesse.
 
