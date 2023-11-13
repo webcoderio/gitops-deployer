@@ -1,10 +1,9 @@
 #!/bin/bash
 
-source ../.env
 source shared.sh
 
 # additional build (optional)
-pullBuild id1
+pullBuild "$1" "$2"
 # additional build (optional)
-pushBuild id1
+pushBuild "$1" "$2"
 # additional build (optional)

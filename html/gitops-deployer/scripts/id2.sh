@@ -3,7 +3,7 @@
 source shared.sh
 
 # additional build (optional)
-pullBuild id2
+pullBuild "$1" "$2"
 # additional build (optional)
-pushBuild id2
+pushBuild "$1" "$2"
 # additional build (optional)

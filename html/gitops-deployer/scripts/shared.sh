@@ -9,13 +9,15 @@ DOMAIN=${ID}_${DOMAIN}
 DEPLOY_PATH=${ID}_${DEPLOY_PATH}
 DEPLOY_IGNORE_PATHS=${ID}_${DEPLOY_IGNORE_PATHS}
 
+GITHUB_TOKEN="$2"
+
 pullBuild() {
-  echo "Downloading GitHub release build for deploy ID: ${ID}..."
-  # todo: downloadGitHubRelease()
+  echo "downloading GitHub release build for deploy ID: ${ID}..."
+  downloadGitHubArtifact "$GITHUB_TOKEN"
 }
 
 pushBuild() {
-  echo "Deploy ID: ${ID} pushing to local server..."
+  echo "deploy ID: ${ID} pushing to local server..."
 
   # ignore paths
   IFS=',' read -ra ignore_paths <<< "${DEPLOY_IGNORE_PATHS}"
@@ -24,28 +26,35 @@ pushBuild() {
       cp -r "${DEPLOY_PATH}/${ignore_path}" "/var/www/html/${DOMAIN}/"
   done
 
-  echo "deploy ID: ${ID} pushed to local server successful!"
+  echo "deploy ID: ${ID} pushed to local server successfully."
 }
 
-func downloadGitHubRelease(repoURL, repoBranch, repoName string) error {
-  // store
-  tempDir, err := ioutil.TempDir("", "release-temp-dir")
-  if err != nil {
-    return fmt.Errorf("error creating temporary directory: %s", err)
-  }
-  defer os.RemoveAll(tempDir)
+downloadGitHubArtifact() {
+  local github_token="$1"
 
-  // curl
-  releaseURL := fmt.Sprintf("%s/releases/download/%s/RELEASE_FILE_NAME", repoURL, repoBranch)
-  downloadCmd := exec.Command("curl", "-LJO", releaseURL)
-  downloadCmd.Dir = tempDir
-  downloadOutput, downloadErr := downloadCmd.CombinedOutput()
+  # Store
+  tempDir=$(mktemp -d -t artifact-temp-dir.XXXXXX)
+  trap 'rm -rf "$tempDir"' EXIT
 
-  if downloadErr != nil {
-    return fmt.Errorf("error downloading release file: %s", downloadErr)
-  }
+  # Fetch the latest workflow run associated with the repository and branch
+  workflow_run_url=$(curl -sL -H "Authorization: Bearer $github_token" \
+    "https://api.github.com/repos/$REPO_NAME/actions/runs?branch=$REPO_BRANCH" \
+    | jq -r '.workflow_runs[0].url')
 
-  fmt.Printf("Downloaded release file for %s to %s\n", repoName, tempDir)
+  # Fetch the artifact download URL from the latest workflow run
+  artifact_url=$(curl -sL -H "Authorization: Bearer $github_token" \
+    "$workflow_run_url/artifacts" \
+    | jq -r '.artifacts[0].archive_download_url')
 
-  return nil
+  # Curl
+  curl -LJO "$artifact_url"
+
+  # Check for download errors
+  if [ $? -ne 0 ]; then
+    echo "Error downloading artifact: $artifact_url"
+    exit 1
+  fi
+
+  echo "Downloaded artifact for ${REPO_NAME} to ${tempDir}"
 }
+

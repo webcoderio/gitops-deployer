@@ -13,7 +13,7 @@ func main() {
 	fmt.Println("Starting Gin server...")
 	err := godotenv.Load()
 	if err != nil {
-		fmt.Println("Error loading .env file")
+		fmt.Println("error loading .env file")
 	}
 
 	route := gin.Default()
@@ -23,14 +23,22 @@ func main() {
 		})
 	})
 
-	route.GET("/deploy/:repoId", func(c *gin.Context) {
-		fmt.Println("123")
-		repoId := c.Param("repoId")
-		if repoId == "" {
-			repoId = "id1" // default
+	route.GET("/deploy/:deployId", func(c *gin.Context) {
+		// deploy id
+		deployId := c.Param("deployId")
+		if deployId == "" {
+			deployId = "id1" // default
 		}
 
-		err := runDeployScript(repoId)
+		githubToken := c.Param("githubToken")
+		if githubToken == "" {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":   true,
+				"message": "Github Token is required to be post from github pipeline encrypted",
+			})
+		}
+
+		err := runDeployScript(deployId, githubToken)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error":   true,
@@ -40,7 +48,7 @@ func main() {
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"message": fmt.Sprintf("deploy ID: %s deployment successful!", repoId),
+			"message": fmt.Sprintf("deploy ID: %s deployment successful!", deployId),
 		})
 	})
 
@@ -52,16 +60,16 @@ func main() {
 	route.Run(":" + port)
 }
 
-func runDeployScript(repoId string) error {
+func runDeployScript(deployId string, githubToken string) error {
 	// todo: check if the sh file exists
-	if repoId == "" {
-		repoId = "id1"
+	if deployId == "" {
+		deployId = "id1"
 	}
 
-	cmd := exec.Command("bash", repoId+".sh")
+	cmd := exec.Command("bash", deployId+".sh", deployId, githubToken)
 	cmd.Dir = "./scripts"
-	output, err := cmd.CombinedOutput()
 
+	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("error executing command: %s", err)
 	}
