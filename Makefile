@@ -26,6 +26,10 @@ crontab:
     touch /var/log/cron.log && \
     service cron restart && service cron status"
 
+dev:
+	docker-compose -f docker-compose.yml exec -T app-app bash -c "cd /var/www/html/$(NAME) && \
+	go run main.go"
+
 down:
 	docker ps -a -q | xargs -n 1 -P 8 -I {} docker stop {}
 	docker builder prune --all --force
@@ -67,4 +71,4 @@ timeout:
 up: down timeout owner
 	docker-compose -f docker-compose.yml up -d --remove-orphans
 	make package
-	make serve
+	make dev

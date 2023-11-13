@@ -10,14 +10,21 @@ import (
 )
 
 func main() {
+	fmt.Println("Starting Gin server...")
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("Error loading .env file")
 	}
 
-	r := gin.Default()
+	route := gin.Default()
+	route.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Hello, This is GitOPS Deployer.",
+		})
+	})
 
-	r.GET("/deploy/:repoId", func(c *gin.Context) {
+	route.GET("/deploy/:repoId", func(c *gin.Context) {
+		fmt.Println("123")
 		repoId := c.Param("repoId")
 		if repoId == "" {
 			repoId = "id1" // default
@@ -42,7 +49,7 @@ func main() {
 		port = "8080"
 	}
 
-	r.Run(":" + port)
+	route.Run(":" + port)
 }
 
 func runDeployScript(repoId string) error {

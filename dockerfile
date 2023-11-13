@@ -29,7 +29,7 @@ RUN npm install -g --force yarn
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # golang
-ENV GOLANG_VERSION=1.18.1
+ENV GOLANG_VERSION=1.20.2
 RUN curl -s https://dl.google.com/go/go${GOLANG_VERSION}.linux-amd64.tar.gz | tar -xz -C /root
 RUN export PATH=$PATH:/root/go/bin
 RUN source ~/.profile
