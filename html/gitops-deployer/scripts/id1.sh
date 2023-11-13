@@ -1,7 +1,7 @@
 #!/bin/bash
 
 source ../.env
-source deploy-lib.sh
+source shared.sh
 
 # additional build (optional)
 pullBuild id1
