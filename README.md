@@ -1,4 +1,5 @@
 # GitOps Deployer
 ## Credit to: Andy Ng www.webcoder.io
-A Golang Gin API for deploying from a Git branch to a server path. Ideal for Docker microservices, it suits scenarios with firewall restrictions. Unlike webhooks, it ensures seamless CI/CD integration in restricted environments.
+
+Golang-powered Gin API, a DevOps powerhouse, excels in Git-to-server deployment, overcoming Rsync/SCP limitations and tailored for scenarios restricting SSH access, making it ideal for Docker microservices. Seamlessly integrate with GitHub Action pipelines for the fastest, Jenkins-killer bash-driven CI/CD in restricted environments, enhancing security constraints by pulling from GitHub releases. Master deployment with speed, security, and microservices finesse.
 
