@@ -2,13 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"net/http"
 	"os"
 	"os/exec"
-	"strings"
-
-	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -19,19 +17,23 @@ func main() {
 
 	r := gin.Default()
 
-	r.GET("/deploy/:repoName", func(c *gin.Context) {
-		repoName := c.Param("repoName")
-		err := runDeployScript(repoName)
+	r.GET("/deploy/:repoId", func(c *gin.Context) {
+		repoId := c.Param("repoId")
+		if repoId == "" {
+			repoId = "id1" // default
+		}
+
+		err := runDeployScript(repoId)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error":   true,
-				"message": fmt.Sprintf("Error deploying repository: %s", err),
+				"message": fmt.Sprintf("error deploying repository: %s", err),
 			})
 			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"message": fmt.Sprintf("Repository %s deployment successful!", repoName),
+			"message": fmt.Sprintf("deploy ID: %s deployment successful!", repoId),
 		})
 	})
 
@@ -43,37 +45,20 @@ func main() {
 	r.Run(":" + port)
 }
 
-func runDeployScript(repoName string) error {
-    // id
-	scriptName := fmt.Sprintf("%s.sh", repoName)
-    // todo: check if the sh file exists
-	if scriptName == "" {
-		return fmt.Errorf("Deployment script not found for repository: %s", repoName)
+func runDeployScript(repoId string) error {
+	// todo: check if the sh file exists
+	if repoId == "" {
+		repoId = "id1"
 	}
 
-	repoId = fmt.Sprintf("%s_ID", strings.ToUpper(repoName))
-
-	// env pattern
-	repoURLKey := fmt.Sprintf("%s_REPO_URL", repoId)
-	repoBranchKey := fmt.Sprintf("%s_REPO_BRANCH", repoId)
-	domainKey := fmt.Sprintf("%s_DOMAIN", repoId)
-	deployPathKey := fmt.Sprintf("%s_DEPLOY_PATH", repoId)
-	deployPathIgnoreKey := fmt.Sprintf("%s_DEPLOY_PATH_IGNORE", repoId)
-
-    # variables
-	scriptName = os.Getenv(scriptName)
-	repoURL := os.Getenv(repoURLKey)
-	repoBranch := os.Getenv(repoBranchKey)
-	domain := os.Getenv(domainKey)
-	deployPath := os.Getenv(deployPathKey)
-	deployPathIgnore := os.Getenv(deployPathIgnoreKey)
-
-	cmd := exec.Command("bash", scriptName, repoURL, repoBranch, domain, deployPath, deployPathIgnore)
+	cmd := exec.Command("bash", repoId+".sh")
+	cmd.Dir = "./scripts"
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
-		return fmt.Errorf("Error executing command: %s", err)
+		return fmt.Errorf("error executing command: %s", err)
 	}
 
 	fmt.Println(string(output))
-	return
+	return nil
+}

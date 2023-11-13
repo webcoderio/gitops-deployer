@@ -1,9 +1,10 @@
 #!/bin/bash
 
+source ../.env
 source deploy-lib.sh
 
 # additional build (optional)
-pullBuild 2
+pullBuild id1
 # additional build (optional)
-pushBuild 2
+pushBuild id1
 # additional build (optional)
