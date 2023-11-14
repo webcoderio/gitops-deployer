@@ -32,24 +32,20 @@ pushBuild() {
 downloadGitHubArtifact() {
   local github_token="$1"
 
-  # Store
+  # store
   tempDir=$(mktemp -d -t artifact-temp-dir.XXXXXX)
   trap 'rm -rf "$tempDir"' EXIT
 
-  # Fetch the latest workflow run associated with the repository and branch
+  # curl
   workflow_run_url=$(curl -sL -H "Authorization: Bearer $github_token" \
-    "https://api.github.com/repos/$REPO_NAME/actions/runs?branch=$REPO_BRANCH" \
-    | jq -r '.workflow_runs[0].url')
-
-  # Fetch the artifact download URL from the latest workflow run
+    "https://api.github.com/repos/$REPO_NAME/actions/runs?branch=$REPO_BRANCH")
+  workflow_run_url=$(echo "$workflow_run_url" | grep -o '"url": "[^"]*' | sed 's/"url": "\(.*\)"/\1/')
   artifact_url=$(curl -sL -H "Authorization: Bearer $github_token" \
-    "$workflow_run_url/artifacts" \
-    | jq -r '.artifacts[0].archive_download_url')
-
-  # Curl
+    "$workflow_run_url/artifacts")
+  artifact_url=$(echo "$artifact_url" | grep -o '"archive_download_url": "[^"]*' | sed 's/"archive_download_url": "\(.*\)"/\1/')
   curl -LJO "$artifact_url"
 
-  # Check for download errors
+  # result
   if [ $? -ne 0 ]; then
     echo "Error downloading artifact: $artifact_url"
     exit 1

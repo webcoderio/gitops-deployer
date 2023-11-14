@@ -23,26 +23,25 @@ func main() {
 		})
 	})
 
-	route.GET("/deploy/:deployId", func(c *gin.Context) {
+	route.POST("/deploy/:deployId", func(c *gin.Context) {
 		// deploy id
 		deployId := c.Param("deployId")
 		if deployId == "" {
 			deployId = "id1" // default
 		}
 
-		githubToken := c.Param("githubToken")
-		if githubToken == "" {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":   true,
-				"message": "Github Token is required to be post from github pipeline encrypted",
-			})
+		tokens, exists := c.Request.Header["Tokens"]
+		fmt.Println(c.Request.Header)
+		if !exists || len(tokens) == 0 {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token is missing"})
+			return
 		}
 
-		err := runDeployScript(deployId, githubToken)
+		err := runScript(deployId, tokens[0])
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error":   true,
-				"message": fmt.Sprintf("error deploying repository: %s", err),
+				"message": fmt.Sprintf("error deploying with error."),
 			})
 			return
 		}
@@ -60,13 +59,13 @@ func main() {
 	route.Run(":" + port)
 }
 
-func runDeployScript(deployId string, githubToken string) error {
+func runScript(deployId string, token string) error {
 	// todo: check if the sh file exists
 	if deployId == "" {
 		deployId = "id1"
 	}
 
-	cmd := exec.Command("bash", deployId+".sh", deployId, githubToken)
+	cmd := exec.Command("bash", deployId+".sh", deployId, token)
 	cmd.Dir = "./scripts"
 
 	output, err := cmd.CombinedOutput()
