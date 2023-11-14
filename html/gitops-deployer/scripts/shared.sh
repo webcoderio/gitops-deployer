@@ -36,18 +36,22 @@ downloadGitHubArtifact() {
   tempDir=$(mktemp -d -t artifact-temp-dir.XXXXXX)
   trap 'rm -rf "$tempDir"' EXIT
 
-  # curl
+  # api
   workflow_run_url=$(curl -sL -H "Authorization: Bearer $github_token" \
     "https://api.github.com/repos/$REPO_NAME/actions/runs?branch=$REPO_BRANCH")
   workflow_run_url=$(echo "$workflow_run_url" | grep -o '"url": "[^"]*' | sed 's/"url": "\(.*\)"/\1/')
+  echo "Workflow URL: ${workflow_run_url}";
   artifact_url=$(curl -sL -H "Authorization: Bearer $github_token" \
     "$workflow_run_url/artifacts")
   artifact_url=$(echo "$artifact_url" | grep -o '"archive_download_url": "[^"]*' | sed 's/"archive_download_url": "\(.*\)"/\1/')
+
+  # curl
+  echo "Downloading the artifact URL: ${artifact_url}";
   curl -LJO "$artifact_url"
 
   # result
   if [ $? -ne 0 ]; then
-    echo "Error downloading artifact: $artifact_url"
+    echo "error downloading artifact: $artifact_url"
     exit 1
   fi
 
