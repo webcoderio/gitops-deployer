@@ -1,4 +1,12 @@
 # GitOps Deployer
+First thing first, what is `GitOPS`?
+
+GitOPS is the best practice of DevOPS.
+
+https://www.atlassian.com/git/tutorials/gitops
+
+https://about.gitlab.com/topics/gitops/
+
 ![flow.jpeg](flow.jpeg)
 
 Credit to: Andy Ng www.webcoder.io
