@@ -38,12 +38,6 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-
-    # Add additional configurations if needed
-
-    location / {
-        # Your other configurations for the root path
-    }
 ```
 
 ***Apache***
